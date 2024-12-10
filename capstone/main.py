@@ -1,6 +1,7 @@
 import numpy as np 
 import pandas as pd 
 import sklearn
+import matplotlib.pyplot as plt
 from sklearn.model_selection import train_test_split
 from sklearn.linear_model import LinearRegression
 from sklearn.preprocessing import StandardScaler
@@ -54,8 +55,6 @@ data['Price Per Horsepower'] = data['Price (in USD)'] / data['Horsepower']
 #split data into training sets, 70/30 split 
 train_data, test_data = train_test_split(data, test_size=0.3, random_state=925)
 
-
-
 data_cleaned = remove_non_numeric_engine_size(data, column_name='Engine Size (L)')
 
 # Reassign features for model preparation
@@ -84,7 +83,6 @@ X_scaled = scaler.fit_transform(features)
 model_hp = LinearRegression()
 model_hp.fit(X_scaled, target_hp)
 
-
 # Torque model
 model_torque = LinearRegression()
 model_torque.fit(X_scaled, target_torque)
@@ -106,20 +104,119 @@ predicted_hp = model_hp.predict(X_test_scaled)
 predicted_torque = model_torque.predict(X_test_scaled)
 predicted_z60 = model_z60.predict(X_test_scaled)
 
-print("Horsepower Predictions")
-evaluate_model(model_hp, X_test_scaled, test_target_hp, "Horsepower")
-
-print("Torque Predictions")
-evaluate_model(model_torque, X_test_scaled, test_target_torque, "Torque")
-
-print("0-60 MPH Time")
-evaluate_model(model_z60, X_test_scaled, test_target_z60, "0-60 MPH Time")
+print("Actual vs Predictions")
 
 results = test_features.copy()
 results['Actual Horsepower'] = test_target_hp.values
+results['Predicted Horsepower'] = predicted_hp
+results['Actual Torque'] = test_target_torque.values
+results['Predicted Torque'] = predicted_torque
+results['Actual 0-60 MPH Time'] = test_target_z60.values
+results['Predicted 0-60 MPH Time'] = predicted_z60
+
+print(results.head())
+
+#horse power
+plt.figure(figsize=(8, 8))
+plt.scatter(test_target_hp, predicted_hp, color='blue', alpha=0.6, label='Predicted vs Actual')
+
+max_val = max(test_target_hp.max(), predicted_hp.max())
+min_val = min(test_target_hp.min(), predicted_hp.min())
+plt.plot([min_val, max_val], [min_val, max_val], color='red', linestyle='--', label='Perfect Prediction Line')
+
+plt.xlabel('Actual Horsepower', fontsize=14)
+plt.ylabel('Predicted Horsepower', fontsize=14)
+plt.title('Actual vs Predicted Horsepower', fontsize=16)
+plt.legend()
+
+plt.tight_layout()
+plt.show()
+
+#torque
+
+test_target_torque = pd.to_numeric(test_target_torque, errors='coerce')
+predicted_torque = pd.to_numeric(predicted_torque, errors='coerce')
+
+predicted_torque = pd.Series(predicted_torque)
+test_target_torque = test_target_torque.dropna()
+predicted_torque = predicted_torque.dropna()
+
+plt.figure(figsize=(8, 8))
+plt.scatter(test_target_torque, predicted_torque, color='blue', alpha=0.6, label='Predicted vs Actual')
+
+max_val = max(test_target_torque.max(), predicted_torque.max())
+min_val = min(test_target_torque.min(), predicted_torque.min())
+plt.plot([min_val, max_val], [min_val, max_val], color='red', linestyle='--', label='Perfect Prediction Line')
+
+plt.xlabel('Actual Torque', fontsize=14)
+plt.ylabel('Predicted Torque', fontsize=14)
+plt.title('Actual vs Predicted Torque', fontsize=16)
+plt.legend()
+
+plt.tight_layout()
+plt.show()
+
+# 0-60 MPH time
+
+test_target_z60 = pd.to_numeric(test_target_z60, errors='coerce')
+predicted_z60 = pd.to_numeric(predicted_z60, errors='coerce')
 
 
+predicted_z60 = pd.Series(predicted_z60)
 
+test_target_z60 = test_target_z60.dropna()
+predicted_z60 = predicted_z60.dropna()
+ 
+plt.figure(figsize=(8, 8))
+plt.scatter(test_target_z60, predicted_z60, color='blue', alpha=0.6, label='Predicted vs Actual')
 
+max_val = max(test_target_z60.max(), predicted_z60.max())
+min_val = min(test_target_z60.min(), predicted_z60.min())
+plt.plot([min_val, max_val], [min_val, max_val], color='red', linestyle='--', label='Perfect Prediction Line')
 
-#create some graphs here at the bottom 
+plt.xlabel('Actual 0-60 MPH Time', fontsize=14)
+plt.ylabel('Predicted 0-60 MPH Time', fontsize=14)
+plt.title('Actual vs Predicted 0-60 MPH Time', fontsize=16)
+plt.legend()
+
+plt.tight_layout()
+plt.show()
+
+# horsepower error histogram
+errors_hp = test_target_hp - predicted_hp
+
+plt.figure(figsize=(10, 6))
+plt.hist(errors_hp, bins=30, edgecolor='black', alpha=0.7, color='blue')
+
+plt.xlabel('Prediction Error (Horsepower)', fontsize=14)
+plt.ylabel('Frequency', fontsize=14)
+plt.title('Histogram of Horsepower Prediction Errors', fontsize=16)
+
+plt.tight_layout()
+plt.show()
+
+# torque error histogram
+errors_torque = test_target_torque - predicted_torque
+
+plt.figure(figsize=(10, 6))
+plt.hist(errors_torque, bins=30, edgecolor='black', alpha=0.7, color='green')
+
+plt.xlabel('Prediction Error (Torque)', fontsize=14)
+plt.ylabel('Frequency', fontsize=14)
+plt.title('Histogram of Torque Prediction Errors', fontsize=16)
+
+plt.tight_layout()
+plt.show()
+
+# 0-60 MPH error histogram
+errors_z60 = test_target_z60 - predicted_z60
+
+plt.figure(figsize=(10, 6))
+plt.hist(errors_z60, bins=30, edgecolor='black', alpha=0.7, color='red')
+
+plt.xlabel('Prediction Error (0-60 MPH Time)', fontsize=14)
+plt.ylabel('Frequency', fontsize=14)
+plt.title('Histogram of 0-60 MPH Time Prediction Errors', fontsize=16)
+
+plt.tight_layout()
+plt.show()
