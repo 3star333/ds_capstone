@@ -39,7 +39,7 @@ def evaluate_model(model, X_test, y_test, target_name):
     print(f"  R² Score: {r2:.2f}")
     print()
 
-data = pd.read_csv("capstone\Sport car price.csv")
+data = pd.read_csv("capstone\\Sport car price.csv")
 data['Price (in USD)'] = data['Price (in USD)'].str.replace(',', '').astype(float)
 
 # Convert 'Horsepower' to numeric
@@ -102,7 +102,21 @@ evaluate_model(model_torque, X_test_scaled, test_target_torque, "Torque")
 evaluate_model(model_z60, X_test_scaled, test_target_z60, "0-60 MPH Time")
 
 # Predict and calculate error
+predicted_hp = model_hp.predict(X_test_scaled)
+predicted_torque = model_torque.predict(X_test_scaled)
+predicted_z60 = model_z60.predict(X_test_scaled)
 
+print("Horsepower Predictions")
+evaluate_model(model_hp, X_test_scaled, test_target_hp, "Horsepower")
+
+print("Torque Predictions")
+evaluate_model(model_torque, X_test_scaled, test_target_torque, "Torque")
+
+print("0-60 MPH Time")
+evaluate_model(model_z60, X_test_scaled, test_target_z60, "0-60 MPH Time")
+
+results = test_features.copy()
+results['Actual Horsepower'] = test_target_hp.values
 
 
 
