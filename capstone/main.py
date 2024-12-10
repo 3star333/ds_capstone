@@ -6,8 +6,17 @@ from sklearn.linear_model import LinearRegression
 from sklearn.preprocessing import StandardScaler
 from sklearn.ensemble import RandomForestRegressor
 
-data = pd.read_csv("Sport car price.csv")
-data['Horsepower Per USD'] = data['Horsepower']/data['Price (in USD)'] # hp per dollar column created
+data = pd.read_csv("capstone\Sport car price.csv")
+data['Price (in USD)'] = data['Price (in USD)'].str.replace(',', '').astype(float)
+
+# Convert 'Horsepower' to numeric
+data['Horsepower'] = pd.to_numeric(data['Horsepower'], errors='coerce')
+
+# Drop rows with missing or zero values in 'Horsepower' or 'Price (in USD)'
+data = data[(data['Horsepower'] > 0) & (data['Price (in USD)'] > 0)]
+
+# Calculate 'Price Per Horsepower'
+data['Price Per Horsepower'] = data['Price (in USD)'] / data['Horsepower']
 
 #split data into training sets, 70/30 split 
 train_data, test_data = train_test_split(data, test_size=0.3, random_state=925)
